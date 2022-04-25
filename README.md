@@ -1,1 +1,1 @@
-# MapBoxEx
+# mapbox-ex-2022
