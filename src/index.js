@@ -21,17 +21,15 @@ contentEl.innerHTML = mapTemplate();
 mapboxgl.accessToken = "pk.eyJ1IjoiamZ1ZW50ZXMxOTg0IiwiYSI6ImNsMmFnNWhpajA1MXMzam8zeXQwenN0NmgifQ.3TsHqfKCUbBBTzKilKnTag";
 let map;
 
-
-
-
-
-
 let init = async function () {
 
-
-
-
     mapInit();
+    document.getElementById("showMe").addEventListener("click", () => {
+        if (map != null) {
+            map.flyTo({ center: map.appSettings.user.position },);
+            map.appSettings.user.marker.togglePopup();
+        }
+    });
 }
 
 let mapInit = async function () {
@@ -42,6 +40,13 @@ let mapInit = async function () {
         zoom: 13.5
     });
 
+    map.appSettings = {
+        user: {
+            position: [0, 0]
+
+        }
+    };
+
 
     if ('permissions' in navigator) {
         let perm = await navigator.permissions.query({ name: 'geolocation' })
@@ -50,9 +55,9 @@ let mapInit = async function () {
                 // geo
                 navigator.geolocation.getCurrentPosition(function (position) {
                     let pos = position.coords;
-                    //console.log(pos.longitude, pos.latitude);
 
-                    map.setCenter([pos.longitude, pos.latitude]);
+                    // console.log(pos)
+                    onLocateUser([pos.longitude, pos.latitude]);
                 });
 
                 // const locationWatch = navigator.geolocation.watchPosition((position) => {
@@ -78,8 +83,21 @@ let mapInit = async function () {
 
 let serverGeolocate = async function () {
     let serverGeo = await (await fetch("http://localhost:3000/api/location")).json();
-    //console.log(serverGeo);
-    map.setCenter([serverGeo.lng, serverGeo.lat]);
+    // console.log(serverGeo);
+    onLocateUser(
+        [serverGeo.lng, serverGeo.lat]
+    );
+
+}
+
+let onLocateUser = function (location) {
+    map.appSettings.user.position = location;
+    map.setCenter(location);
+    map.appSettings.user.marker = new mapboxgl.Marker({ color: "#AA1ACD" })
+        .setLngLat(location)
+        .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
+        .addTo(map);
+    // console.log("onLocateUser");
 }
 
 init();
